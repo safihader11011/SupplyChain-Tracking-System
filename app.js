@@ -17,15 +17,41 @@ let blockchain;
 app.post('/add/supplier', async (req, res, next) => {
     blockchain = new Blockchain();
     blockchain.addBlock(req.body)
-    await redis.setAsync("Supplier:data", req.body.data)
-    let temp = await redis.getAsync("Supplier:data")
-    console.log(temp)
+
+    await redis.setAsync("SupplyChain:data", JSON.stringify(blockchain.chain))
     console.log(blockchain.chain)
+    res.send("added")
 })
 
-app.post('/add', (req, res, next) => {
+app.get('/get_chain', async (req, res, next) => {
+    // let temp = [];
+    // redis.keys("Supplier:*", (error, response) => {
+    //     console.log(response)
+
+    //     response.map(async res => {
+    //         temp.push()
+    //         console.log(temp)
+    //     })
+    // })
+    let temp = JSON.parse(await redis.getAsync("SupplyChain:data"))
+    res.send(temp)
+})
+
+app.get('/delete_chain', async (req, res, next) => {
+    redis.keys("SupplyChain:*", (error, response) => {
+        response.map(async res => {
+            await redis.delAsync(res)
+        })
+    })
+    res.send("deleted")
+})
+
+app.post('/add', async (req, res, next) => {
     blockchain.addBlock(req.body)
+
+    await redis.setAsync("SupplyChain:data", JSON.stringify(blockchain.chain))
     console.log(blockchain.chain)
+    res.send("added")
 })
 
 app.listen(3001, () => { console.log("Server Started!") });
