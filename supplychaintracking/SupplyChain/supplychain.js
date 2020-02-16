@@ -1,0 +1,58 @@
+const express = require('express');
+const router = express.Router();
+const Blockchain = require('../../blockchain/index');
+const SupplyChainModel = require('../../model/supplierchain.model')
+const { GENESIS_DATA } = require('../../config');
+
+const mongoose = require('mongoose')
+var hash = require('object-hash');
+
+let blockchain;
+
+router.post('/add/supplier/:supplierId', async (req, res, next) => {
+    const genesisBlock = { ...GENESIS_DATA };
+    const getHash = hash(req.body.blocks);
+    const lastHash = genesisBlock.hash;
+    const blockData = { ...req.body.blocks, hash: getHash, lastHash: lastHash, timestamp: new Date() };
+    const blockArray = [ genesisBlock, blockData]; 
+    const reqBody = { ...req.body, supplierId: req.params.supplierId, timestamp: new Date(), blocks: blockArray};
+
+    const supplyChain = new SupplyChainModel(reqBody);
+    const supplierResponse = await supplyChain.save();
+
+    res.send(supplierResponse)
+})
+
+router.post('/add/:supplierId', async (req, res, next) => {
+    const getData = await SupplyChainModel.findOne({ supplierId: req.params.supplierId });
+
+    const length = getData.blocks.length;
+    const lastBlock = getData.blocks[length-1];
+
+    const getHash = hash(req.body);
+    const lastHash = lastBlock.hash;
+    const newBlock = { ...req.body, hash: getHash, lastHash: lastHash, timestamp: new Date()};
+    const blockArray = [ ...getData.blocks, newBlock];
+
+    const updateChain = await SupplyChainModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(getData._id)},
+        { $set: { blocks: blockArray}},
+        { new: true }
+    )
+    res.send(updateChain)
+})
+
+router.get('/delete_chain', async (req, res, next) => {
+    redis.keys("SupplyChain:*", (error, response) => {
+        response.map(async res => {
+            await redis.delAsync(res)
+        })
+    })
+    res.send("deleted")
+})
+
+router.post('/add/:blockId', async (req, res, next) => {
+    //const block = 
+})
+
+
+module.exports = router;
