@@ -1,4 +1,4 @@
-module.exports =  (object) => {
+module.exports = (object) => {
   console.log("--------------------");
   console.log("System Error", object);
   console.log("--------------------");
@@ -10,14 +10,6 @@ module.exports =  (object) => {
       }
     }
   }
-
-  // Challan details api error handling start
-  // To handle empty params
-  // if (object.name === "TypeError") {
-  //   object.message = "empty string";
-  //   object.status = 403;
-  // }
-  // Challan details api error handling end
 
   return {
     status: object.status || 500,
