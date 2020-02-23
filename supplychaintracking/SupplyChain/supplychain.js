@@ -122,18 +122,4 @@ router.get("/fetchAll", async (req, res) => {
     }
 })
 
-router.get('/delete_chain', async (req, res, next) => {
-    redis.keys("SupplyChain:*", (error, response) => {
-        response.map(async res => {
-            await redis.delAsync(res)
-        })
-    })
-    res.send("deleted")
-})
-
-router.post('/add/:blockId', async (req, res, next) => {
-    //const block = 
-})
-
-
 module.exports = router;
