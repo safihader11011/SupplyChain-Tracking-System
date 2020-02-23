@@ -25,5 +25,5 @@ app.use("/api/supplychain", supplychain);
 app.use("/user", user)
 
 
-const port = process.env.env|| 3000;
+const port = process.env.PORT;
 app.listen(port, () => { console.log("Server Started at port :"+port) });
