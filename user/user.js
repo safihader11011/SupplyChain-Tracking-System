@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken');
 
+const errorHandler = require('../common/handler/error.handler');
 const UserModel = require('./user.model');
 
 router.get("/getuser", async (req, res) => {
@@ -20,7 +21,8 @@ router.get("/getuser", async (req, res) => {
         return res.status(200).send(getUser)
     }
     catch(error){
-        return res.status(400).send("Invalid token")
+        let errorDoc = errorHandler(error);
+        return res.status(errorDoc.status).send(errorDoc);
     }
     
 })
@@ -51,7 +53,8 @@ router.post("/login", async (req, res) => {
             }
     }
     catch(error){
-        return res.status(400).send(error)
+        let errorDoc = errorHandler(error);
+        return res.status(errorDoc.status).send(errorDoc);
     }
     
 })
@@ -95,7 +98,8 @@ router.post("/signup", async (req, res) => {
             }
     }
     catch(error){
-        return res.status(400).send("User already exist")
+        let errorDoc = errorHandler(error);
+        return res.status(errorDoc.status).send(errorDoc);
     }
     
 })
