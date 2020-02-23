@@ -9,8 +9,6 @@ const errorHandler = require('../../common/handler/error.handler');
 const mongoose = require('mongoose')
 var hash = require('object-hash');
 
-let blockchain;
-
 router.post('/add/supplier/:supplierId', async (req, res, next) => {
     try {
         const genesisBlock = { ...GENESIS_DATA };
@@ -94,6 +92,34 @@ router.post('/add/:supplyChainId', async (req, res, next) => {
     }
 
 
+})
+
+router.get("/fetchById/:supplierId", async (req, res) => {
+    try {
+        const fetchBlockChains = await SupplyChainModel.find({ supplierId: mongoose.Types.ObjectId(req.params.supplierId) });
+
+        return res.status(200).send({
+            data: fetchBlockChains,
+            message: "Blockchain list fetched successfully"
+        })
+    } catch (error) {
+        let errorDoc = errorHandler(error);
+        return res.status(errorDoc.status).send(errorDoc);
+    }
+})
+
+router.get("/fetchAll", async (req, res) => {
+    try {
+        const fetchBlockChains = await SupplyChainModel.find();
+
+        return res.status(200).send({
+            data: fetchBlockChains,
+            message: "Blockchain list fetched successfully"
+        })
+    } catch (error) {
+        let errorDoc = errorHandler(error);
+        return res.status(errorDoc.status).send(errorDoc);
+    }
 })
 
 router.get('/delete_chain', async (req, res, next) => {
