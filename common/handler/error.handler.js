@@ -1,4 +1,4 @@
-export default (object: any) => {
+module.exports =  (object) => {
   console.log("--------------------");
   console.log("System Error", object);
   console.log("--------------------");
