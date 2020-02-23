@@ -36,7 +36,7 @@ router.post('/add/supplier/:supplierId', async (req, res, next) => {
 
 router.post('/add/:supplierId', async (req, res, next) => {
     try {
-        const getData = await SupplyChainModel.findOne({ supplierId: req.params.supplierId });
+        const getData = await SupplyChainModel.findOne({ _id: req.params.supplierId });
 
         if (!getData) {
             throw {
