@@ -4,7 +4,7 @@ const Blockchain = require('../../blockchain/index');
 const SupplyChainModel = require('../../model/supplierchain.model')
 const { GENESIS_DATA } = require('../../config');
 
-const errorHandler = require('../common/handler/error.handler');
+const errorHandler = require('../../common/handler/error.handler');
 const mongoose = require('mongoose')
 var hash = require('object-hash');
 
@@ -35,21 +35,31 @@ router.post('/add/supplier/:supplierId', async (req, res, next) => {
 })
 
 router.post('/add/:supplierId', async (req, res, next) => {
-    const getData = await SupplyChainModel.findOne({ supplierId: req.params.supplierId });
+    try{
+        const getData = await SupplyChainModel.findOne({ supplierId: req.params.supplierId });
 
-    const length = getData.blocks.length;
-    const lastBlock = getData.blocks[length-1];
+        const length = getData.blocks.length;
+        const lastBlock = getData.blocks[length-1];
 
-    const getHash = hash(req.body);
-    const lastHash = lastBlock.hash;
-    const newBlock = { ...req.body, hash: getHash, lastHash: lastHash, timestamp: new Date()};
-    const blockArray = [ ...getData.blocks, newBlock];
+        const getHash = hash(req.body);
+        const lastHash = lastBlock.hash;
+        const newBlock = { ...req.body, hash: getHash, lastHash: lastHash, timestamp: new Date()};
+        const blockArray = [ ...getData.blocks, newBlock];
 
-    const updateChain = await SupplyChainModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(getData._id)},
-        { $set: { blocks: blockArray}},
-        { new: true }
-    )
-    res.send(updateChain)
+        const updateChain = await SupplyChainModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(getData._id)},
+            { $set: { blocks: blockArray}},
+            { new: true }
+        )
+        return res.status(200).send({
+            data: updateChain,
+            message: "Block added successfully"
+        })
+    }catch(error){
+        let errorDoc = errorHandler(error);
+        return res.status(errorDoc.status).send(errorDoc);
+    }
+
+ 
 })
 
 router.get('/delete_chain', async (req, res, next) => {
