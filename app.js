@@ -10,7 +10,7 @@ const app = express();
 const supplychain = require("./supplychaintracking/SupplyChain/supplychain")
 const user = require("./user/user");
 
-mongoose.connect('mongodb://localhost/SupplyChainTracking', {useNewUrlParser: true})
+mongoose.connect('mongodb+srv://rosz:1234@cluster0-frru9.mongodb.net/test?retryWrites=true&w=majority', {useUnifiedTopology: true , useNewUrlParser: true})
     .then(() => console.log("Connected to MongoDB ...."))
     .catch(err => console.log("Connection Error ==>",err))
 
