@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Blockchain = require('../../blockchain/index');
-const SupplyChainModel = require('../../model/supplierchain.model')
+
+const SupplyChainModel = require('../supplierchain.model')
 const { GENESIS_DATA } = require('../../config');
 
 const errorHandler = require('../../common/handler/error.handler');
