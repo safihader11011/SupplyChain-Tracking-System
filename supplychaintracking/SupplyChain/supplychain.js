@@ -4,23 +4,34 @@ const Blockchain = require('../../blockchain/index');
 const SupplyChainModel = require('../../model/supplierchain.model')
 const { GENESIS_DATA } = require('../../config');
 
+const errorHandler = require('../common/handler/error.handler');
 const mongoose = require('mongoose')
 var hash = require('object-hash');
 
 let blockchain;
 
 router.post('/add/supplier/:supplierId', async (req, res, next) => {
-    const genesisBlock = { ...GENESIS_DATA };
-    const getHash = hash(req.body.blocks);
-    const lastHash = genesisBlock.hash;
-    const blockData = { ...req.body.blocks, hash: getHash, lastHash: lastHash, timestamp: new Date() };
-    const blockArray = [ genesisBlock, blockData]; 
-    const reqBody = { ...req.body, supplierId: req.params.supplierId, timestamp: new Date(), blocks: blockArray};
+    try{
+        const genesisBlock = { ...GENESIS_DATA };
+        const getHash = hash(req.body.blocks);
+        const lastHash = genesisBlock.hash;
+        const blockData = { ...req.body.blocks, hash: getHash, lastHash: lastHash, timestamp: new Date() };
+        const blockArray = [ genesisBlock, blockData]; 
+        const reqBody = { ...req.body, supplierId: req.params.supplierId, timestamp: new Date(), blocks: blockArray};
 
-    const supplyChain = new SupplyChainModel(reqBody);
-    const supplierResponse = await supplyChain.save();
+        const supplyChain = new SupplyChainModel(reqBody);
+        const supplierResponse = await supplyChain.save();
 
-    res.send(supplierResponse)
+        return res.status(200).send({
+            data: supplierResponse,
+            message: "Supplier block added successfully"
+        })
+    }catch(error){
+        let errorDoc = errorHandler(error);
+        return res.status(errorDoc.status).send(errorDoc);
+    }
+
+   
 })
 
 router.post('/add/:supplierId', async (req, res, next) => {
