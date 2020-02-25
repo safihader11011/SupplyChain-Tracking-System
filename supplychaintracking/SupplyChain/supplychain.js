@@ -94,12 +94,41 @@ router.post('/add/:supplyChainId', async (req, res, next) => {
 
 })
 
-router.get("/fetchById/:supplierId", async (req, res) => {
+router.get("/fetchById/:userId", async (req, res) => {
     try {
-        const fetchBlockChains = await SupplyChainModel.find({ supplierId: mongoose.Types.ObjectId(req.params.supplierId) });
+        const fetchBlockChainList = await UserModel.aggregate([
+            { $match : {_id: mongoose.Types.ObjectId(req.params.userId)}},
+            {
+                $lookup:{
+                    from: 'supplychains',
+                    localField: 'blockchains',
+                    foreignField: '_id',
+                    as: 'block_chain_list'
+                }
+            },
+            { $unwind: "$block_chain_list" },
+            {
+                $group:{
+                    _id: "$_id",
+                    name: { $first: "$name" },
+                    role: { $first: "$role" },
+                    email: { $first: "$email" },
+                    phone: { $first: "$phone" },
+                    block_chain_list: {
+                        $push: {
+                            name: "$block_chain_list.name",
+                            supplierId: "$block_chain_list.supplierId",
+                            timestamp: "$block_chain_list.timestamp",
+                            blocks: "$block_chain_list.blocks"
+                        }
+                    }
+                }
+
+            }
+        ]);
 
         return res.status(200).send({
-            data: fetchBlockChains,
+            data: fetchBlockChainList,
             message: "Blockchain list fetched successfully"
         })
     } catch (error) {
