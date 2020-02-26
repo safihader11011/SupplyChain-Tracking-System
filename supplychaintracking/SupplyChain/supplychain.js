@@ -164,65 +164,57 @@ router.get("/fetchItemsById/:blockChainId", async (req, res) => {
 
 router.get("/verifyBlockChain", async (req, res) => {
     try {
-        const fetchBlockchainList = await SupplyChainModel.find().select({ blocks: 1 })
+        const fetchBlockchainList = await SupplyChainModel.find();
 
-
+        let blocksArray = [], modifiedDataArray = [];
         for (let outerIndex = 0; outerIndex < fetchBlockchainList.length; outerIndex++) {
 
-            let blocksArray = [];
+            blocksArray = [];
             for (let index = 0; index < fetchBlockchainList[outerIndex].blocks.length; index++) {
-
-                //console.log(fetchBlockchainList[outerIndex].blocks[index])
-
+                let blockData = {}, modifiedData = {};
                 if (fetchBlockchainList[outerIndex].blocks[index + 1]) {
 
                     const currentBlockHash = fetchBlockchainList[outerIndex].blocks[index].hash;
                     const nextBlockLashHash = fetchBlockchainList[outerIndex].blocks[index + 1].lastHash;
-                    //         // console.log("currentBlockHash : ", currentBlockHash);
-                    //         // console.log("nextBlockLashHash : ", nextBlockLashHash)
 
                     if (currentBlockHash === nextBlockLashHash) {
-                        // console.log("TEST ==>", fetchBlockchainList[outerIndex].blocks[index])
-                        if (fetchBlockchainList[outerIndex].blocks[index].role) {
-                            const role = fetchBlockchainList[outerIndex].blocks[index].role;
-
-                            if (role.toString() !== "SUPPLIER") {
-                                const blockData = { ...fetchBlockchainList[outerIndex].blocks[index], dataModified: false }
-                                // const userId = fetchBlockchainList[outerIndex].blocks[index].UserId;
-                                // const data = await SupplyChainModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(userId) },
-                                //     { $set: blockData },
-                                //     { new: true });
-                                console.log(blockData)
-                            }
-                        }
-
+                        blockData = { ...fetchBlockchainList[outerIndex].blocks[index], dataModified: false }
+                        blocksArray.push(blockData)
                     } else {
-                        //console.log("Data Modified")
+                        blockData = { ...fetchBlockchainList[outerIndex].blocks[index], dataModified: true }
+
+                        modifiedData.block_chain_name = fetchBlockchainList[outerIndex].name;
+                        modifiedData.supplierId = fetchBlockchainList[outerIndex].supplierId;
+                        modifiedData.modified_block = blockData;
+                        modifiedDataArray.push(modifiedData);
+
+                        blocksArray.push(blockData)
                     }
+                } else {
+                    blockData = { ...fetchBlockchainList[outerIndex].blocks[index], dataModified: false }
+                    blocksArray.push(blockData)
                 }
             }
-
+            await SupplyChainModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(fetchBlockchainList[outerIndex]._id) },
+                { $set: { blocks: blocksArray } },
+                { new: false }
+            )
         }
-        // const itemsName = [];
-        // fetchItemsList[0].blocks.forEach((block) => {
-        //     if (block.role) {
-        //         if (block.role.toString() === "SUPPLIER") {
-        //             block.data.forEach((item) => {
-        //                 itemsName.push(item.product)
-        //             })
-        //         }
-        //     }
-        // })
 
         return res.status(200).send({
-            data: fetchBlockchainList,
-            message: "Blockchain items list fetched successfully"
+            data: modifiedDataArray,
+            message: "Data verification complete"
         })
-    } catch (error) {
+
+    }
+    catch (error) {
         let errorDoc = errorHandler(error);
         return res.status(errorDoc.status).send(errorDoc);
     }
 })
+
+
+
 
 router.get("/fetchAll", async (req, res) => {
     try {

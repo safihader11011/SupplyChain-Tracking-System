@@ -3,6 +3,9 @@ const router = express.Router();
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken');
 
+var bcrypt = require('bcryptjs');
+var salt = bcrypt.genSaltSync(10);
+
 const errorHandler = require('../common/handler/error.handler');
 const UserModel = require('./user.model');
 
@@ -29,9 +32,19 @@ router.get("/getuser", async (req, res) => {
 
 router.post("/login", async (req, res) => {
     try {
-        const getUser = await UserModel.findOne({ email: req.body.email, password: req.body.password });
+        const getUser = await UserModel.findOne({ email: req.body.email });
 
         if (!getUser) {
+            throw {
+                status: 406,
+                message: "Invalid email or password"
+            }
+        }
+
+        const hash = getUser.password;
+        const verifyPass = bcrypt.compareSync(req.body.password, hash);
+
+        if(!verifyPass){
             throw {
                 status: 406,
                 message: "Invalid email or password"
@@ -61,7 +74,8 @@ router.post("/login", async (req, res) => {
 
 router.post("/signup", async (req, res) => {
     try {
-        const reqBody = { ...req.body, role: req.body.role.toUpperCase() }
+        const hash = bcrypt.hashSync(req.body.password, salt);
+        const reqBody = { ...req.body, password: hash, role: req.body.role.toUpperCase() }
 
         const emailExist = await UserModel.findOne({ email: req.body.email });
 
