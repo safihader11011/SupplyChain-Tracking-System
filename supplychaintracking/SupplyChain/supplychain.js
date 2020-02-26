@@ -14,7 +14,7 @@ router.post('/add/supplier/:supplierId', async (req, res, next) => {
         const genesisBlock = { ...GENESIS_DATA };
         const getHash = hash(req.body.blocks);
         const lastHash = genesisBlock.hash;
-        const blockData = { ...req.body.blocks, hash: getHash, lastHash: lastHash, timestamp: new Date() };
+        const blockData = { ...req.body.blocks, UserId: req.params.supplierId, hash: getHash, lastHash: lastHash, timestamp: new Date() };
         const blockArray = [genesisBlock, blockData];
         const reqBody = { ...req.body, supplierId: req.params.supplierId, blocks: blockArray };
 
@@ -154,6 +154,68 @@ router.get("/fetchItemsById/:blockChainId", async (req, res) => {
 
         return res.status(200).send({
             data: itemsName,
+            message: "Blockchain items list fetched successfully"
+        })
+    } catch (error) {
+        let errorDoc = errorHandler(error);
+        return res.status(errorDoc.status).send(errorDoc);
+    }
+})
+
+router.get("/verifyBlockChain", async (req, res) => {
+    try {
+        const fetchBlockchainList = await SupplyChainModel.find().select({ blocks: 1 })
+
+
+        for (let outerIndex = 0; outerIndex < fetchBlockchainList.length; outerIndex++) {
+
+            let blocksArray = [];
+            for (let index = 0; index < fetchBlockchainList[outerIndex].blocks.length; index++) {
+
+                //console.log(fetchBlockchainList[outerIndex].blocks[index])
+
+                if (fetchBlockchainList[outerIndex].blocks[index + 1]) {
+
+                    const currentBlockHash = fetchBlockchainList[outerIndex].blocks[index].hash;
+                    const nextBlockLashHash = fetchBlockchainList[outerIndex].blocks[index + 1].lastHash;
+                    //         // console.log("currentBlockHash : ", currentBlockHash);
+                    //         // console.log("nextBlockLashHash : ", nextBlockLashHash)
+
+                    if (currentBlockHash === nextBlockLashHash) {
+                        // console.log("TEST ==>", fetchBlockchainList[outerIndex].blocks[index])
+                        if (fetchBlockchainList[outerIndex].blocks[index].role) {
+                            const role = fetchBlockchainList[outerIndex].blocks[index].role;
+
+                            if (role.toString() !== "SUPPLIER") {
+                                const blockData = { ...fetchBlockchainList[outerIndex].blocks[index], dataModified: false }
+                                // const userId = fetchBlockchainList[outerIndex].blocks[index].UserId;
+                                // const data = await SupplyChainModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(userId) },
+                                //     { $set: blockData },
+                                //     { new: true });
+                                console.log(blockData)
+                            }
+                        }
+
+                    } else {
+                        //console.log("Data Modified")
+                    }
+                }
+            }
+
+        }
+        // const itemsName = [];
+        // fetchItemsList[0].blocks.forEach((block) => {
+        //     if (block.role) {
+        //         if (block.role.toString() === "SUPPLIER") {
+        //             block.data.forEach((item) => {
+        //                 itemsName.push(item.product)
+        //             })
+        //         }
+        //     }
+        // })
+
+        return res.status(200).send({
+            data: fetchBlockchainList,
             message: "Blockchain items list fetched successfully"
         })
     } catch (error) {
