@@ -9,6 +9,7 @@ const app = express();
 //const supplier = require("./supplychaintracking/supplier/supplier")
 const supplychain = require("./supplychaintracking/SupplyChain/supplychain")
 const user = require("./user/user");
+const admin = require("./admin/admin.controller");
 
 mongoose.connect('mongodb+srv://rosz:1234@cluster0-frru9.mongodb.net/test?retryWrites=true&w=majority', { useNewUrlParser: true })
     .then(() => console.log("Connected to MongoDB ...."))
@@ -27,7 +28,8 @@ app.use(cors())
 app.use(bodyParser.json())
 
 app.use("/api/supplychain", supplychain);
-app.use("/user", user)
+app.use("/user", user);
+app.use("/admin", admin);
 
 
 const port = process.env.PORT || 3000;
