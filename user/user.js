@@ -31,7 +31,7 @@ router.get("/getuser", async (req, res) => {
 
 router.post("/login", async (req, res) => {
     try {
-        const getUser = await UserModel.findOne({ email: req.body.email, password: req.body.password });
+        const getUser = await UserModel.findOne({ email: req.body.email });
 
         if (!getUser) {
             throw {
@@ -43,7 +43,7 @@ router.post("/login", async (req, res) => {
         const hash = getUser.password;
         const decodePass = bcrypt.compareSync(req.body.password, hash);
 
-        if(decodePass){
+        if (decodePass) {
             throw {
                 status: 406,
                 message: "Invalid email or password"
@@ -73,7 +73,6 @@ router.post("/login", async (req, res) => {
 
 router.post("/signup", async (req, res) => {
     try {
-
         const hash = bcrypt.hashSync(req.body.password, salt);
         const reqBody = { ...req.body, password: hash, role: req.body.role.toUpperCase() }
 

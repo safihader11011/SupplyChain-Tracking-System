@@ -14,7 +14,7 @@ router.post('/add/supplier/:supplierId', async (req, res, next) => {
         const genesisBlock = { ...GENESIS_DATA };
         const getHash = hash(req.body.blocks);
         const lastHash = genesisBlock.hash;
-        const blockData = { ...req.body.blocks, hash: getHash, lastHash: lastHash, timestamp: new Date() };
+        const blockData = { ...req.body.blocks, UserId: req.params.supplierId, hash: getHash, lastHash: lastHash, timestamp: new Date() };
         const blockArray = [genesisBlock, blockData];
         const reqBody = { ...req.body, supplierId: req.params.supplierId, blocks: blockArray };
 
@@ -97,9 +97,9 @@ router.post('/add/:supplyChainId', async (req, res, next) => {
 router.get("/fetchById/:userId", async (req, res) => {
     try {
         const fetchBlockChainList = await UserModel.aggregate([
-            { $match : {_id: mongoose.Types.ObjectId(req.params.userId)}},
+            { $match: { _id: mongoose.Types.ObjectId(req.params.userId) } },
             {
-                $lookup:{
+                $lookup: {
                     from: 'supplychains',
                     localField: 'blockchains',
                     foreignField: '_id',
@@ -108,7 +108,7 @@ router.get("/fetchById/:userId", async (req, res) => {
             },
             { $unwind: "$block_chain_list" },
             {
-                $group:{
+                $group: {
                     _id: "$_id",
                     name: { $first: "$name" },
                     role: { $first: "$role" },
@@ -130,6 +130,31 @@ router.get("/fetchById/:userId", async (req, res) => {
         return res.status(200).send({
             data: fetchBlockChainList,
             message: "Blockchain list fetched successfully"
+        })
+    } catch (error) {
+        let errorDoc = errorHandler(error);
+        return res.status(errorDoc.status).send(errorDoc);
+    }
+})
+
+router.get("/fetchItemsById/:blockChainId", async (req, res) => {
+    try {
+        const fetchItemsList = await SupplyChainModel.find({ _id: mongoose.Types.ObjectId(req.params.blockChainId) })
+
+        const itemsName = [];
+        fetchItemsList[0].blocks.forEach((block) => {
+            if (block.role) {
+                if (block.role.toString() === "SUPPLIER") {
+                    block.data.forEach((item) => {
+                        itemsName.push(item.product)
+                    })
+                }
+            }
+        })
+
+        return res.status(200).send({
+            data: itemsName,
+            message: "Blockchain items list fetched successfully"
         })
     } catch (error) {
         let errorDoc = errorHandler(error);
