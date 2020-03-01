@@ -43,7 +43,7 @@ router.post("/login", async (req, res) => {
         const hash = getUser.password;
         const decodePass = bcrypt.compareSync(req.body.password, hash);
 
-        if (decodePass) {
+        if (!decodePass) {
             throw {
                 status: 406,
                 message: "Invalid email or password"
