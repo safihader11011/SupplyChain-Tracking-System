@@ -17,7 +17,7 @@
     "elliptic": "^6.5.2",
     "express": "^4.17.1",
     "hex-to-binary": "^1.0.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "mongoose": "^5.8.11",
     "nodemon": "^2.0.2",
     "object-hash": "^2.0.1",
